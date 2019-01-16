@@ -45,7 +45,7 @@ def main_loop():
                 sleep_and_clear(2)
                 break
 
-        if not wanna_play():                         # Ask player is he wants to play
+        if p.money == 0 or dealer.money == 0 or not wanna_play():                         # Ask player is he wants to play
             print("Total player money = " + str(p.money))
             print("Total dealer money = " + str(dealer.money))
             return
