@@ -4,11 +4,11 @@ import shapes
 
 class Player():
     
-    def __init__(self):
+    def __init__(self, money=100):
         self.cards = []
         self.sum = 0
         self.aces = 0
-        self.money = 100
+        self.money = money
 
     def append(self):
         card, suite = Card.get_random_card()

@@ -7,29 +7,34 @@ from time import sleep
 
 import shapes
 
+def sleep_and_clear(seconds):
+    sleep(seconds)
+    system("cls")
 
 def main_loop():
     total_bet_so_far = 0                                     # Create total bet variable
 
+    prev_player_money = 100
+    prev_dealer_money = 100
     while True:
-        p, dealer = create_players()                             # create both players
-        change_total_bet_and_change_p_money(p, total_bet_so_far) # Ask for bet                       
+        p, dealer = create_players(prev_player_money, prev_dealer_money)                             # create both players
+        total_bet_so_far = change_total_bet_and_change_p_money(p, total_bet_so_far) # Ask for bet                       
         show_starting_cards(dealer, p)                           # Show starting cards  
         
-        while p.money > 0 and dealer.money > 0:
+        while True:
             if p.sum > 21:                                                      # Check if sum less than 21
-                system("cls")
+                sleep_and_clear(0)
                 dealer.print_player_cards(False)
                 p.print_player_cards()
                 print("Player busts. Dealer wins!!")
+                dealer.money += total_bet_so_far
                 break
 
             want_to_hit = input("Do you want to Hit or Stand. Enter Hit or Stand ").lower() == "hit"# Ask if user want to hit further
-            if want_to_hit:
-                change_total_bet_and_change_p_money(p, total_bet_so_far) # Ask for bet if use want to hit
-    #             # Get betting amount and reduce player money, add it to the total bet, and set the betting_amount to 0 
-                sleep(2)
-                system("cls")
+            if want_to_hit and p.money > 0 and dealer.money > 0:
+                total_bet_so_far = change_total_bet_and_change_p_money(p, total_bet_so_far) # Ask for bet if use want to hit
+                # Get betting amount and reduce player money, add it to the total bet, and set the betting_amount to 0 
+                sleep_and_clear(1)
                 p.append()          # Get a card for p and change the cards left in deck
                 dealer.print_player_cards(False)
                 p.print_player_cards()
@@ -37,21 +42,25 @@ def main_loop():
                 system("cls")
                 dealer_cards_and_player_cards(dealer, p)
                 display_winner(dealer, p, total_bet_so_far)
+                sleep_and_clear(2)
                 break
 
         if not wanna_play():                         # Ask player is he wants to play
             print("Total player money = " + str(p.money))
             print("Total dealer money = " + str(dealer.money))
             return
+        else:
+            prev_player_money = p.money
+            prev_dealer_money = dealer.money
+            total_bet_so_far = 0
 
-
-def create_players():
-    p = Player()
+def create_players(prev_player_money, prev_dealer_money):
+    p = Player(prev_player_money)
     i = 0
     while i in range (2):
         p.append()
         i += 1
-    dealer = Player()       # Create both players
+    dealer = Player(prev_dealer_money)       # Create both players
     dealer.append()
 
     return p, dealer
@@ -60,6 +69,7 @@ def change_total_bet_and_change_p_money(p, total_bet_so_far):
     betting_amount = get_betting_amount_for_player(p.money) # Get first bet
     p.money -= betting_amount                                           # Decrease money of player by that amount
     total_bet_so_far += betting_amount                                  # Keep track of total bet so you can give double when player wins
+    return total_bet_so_far
 
 def get_betting_amount_for_player(money_left):
     while True:
@@ -77,8 +87,7 @@ def show_starting_cards(dealer, p):
 
 def dealer_cards_and_player_cards(dealer, p):
     while dealer.sum < 17:
-        sleep(2)
-        system("cls")
+        sleep_and_clear(2)
         dealer.append()
         dealer.print_player_cards()
         p.print_player_cards()
@@ -89,12 +98,16 @@ def display_winner(dealer, p, total_bet_so_far):
         print("It is tie")
         p.money += total_bet_so_far
 
+    elif dealer.sum < p.sum:
+        print("Player wins")
+        p.money += 2 * total_bet_so_far
+        dealer.money -= total_bet_so_far
+
     elif dealer.sum > p.sum:
         if dealer.sum > 21:
             print("Dealer busts. Player wins!!")
             p.money += 2 * total_bet_so_far
             dealer.money -= total_bet_so_far
-
         else:
             print("Dealer wins")
             dealer.money += total_bet_so_far
